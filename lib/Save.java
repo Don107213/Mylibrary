@@ -5,6 +5,53 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Save {
+
+    public static void saveReserveList(Set<Borrow> reserveList) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("ReserveList.txt")));
+        for(Borrow reserve:reserveList){
+            bw.write(reserve.borrowInfo());
+            bw.newLine();
+            bw.flush();
+        }
+        bw.close();
+    }
+
+    public static Set<Borrow> getReserveList() throws IOException{
+        BufferedReader br = new BufferedReader(new FileReader(new File("ReserveList.txt")));
+        Set<Borrow> reserveList = new HashSet<>();
+        String line;
+        while((line = br.readLine())!= null){
+            String[] strArray = line.split(",");
+            Borrow reserve = new Borrow(strArray[0], strArray[1], strArray[2]);
+            reserveList.add(reserve);
+        }
+        br.close();
+        return reserveList;
+    }
+
+    public static void saveBorrowList(Set<Borrow> borrowList) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("BorrowList.txt")));
+        for(Borrow borrow:borrowList){
+            bw.write(borrow.borrowInfo());
+            bw.newLine();
+            bw.flush();
+        }
+        bw.close();
+    }
+
+    public static Set<Borrow> getBorrowList() throws IOException{
+        BufferedReader br = new BufferedReader(new FileReader(new File("BorrowList.txt")));
+        Set<Borrow> borrowList = new HashSet<>();
+        String line;
+        while((line = br.readLine())!= null){
+            String[] strArray = line.split(",");
+            Borrow borrow = new Borrow(strArray[0], strArray[1], strArray[2]);
+            borrowList.add(borrow);
+        }
+        br.close();
+        return borrowList;
+    }
+
     public static void saveUsers(Set<User> users) throws IOException{
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("UsersData.txt")));
         for (User user : users){

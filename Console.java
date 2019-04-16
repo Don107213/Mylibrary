@@ -10,21 +10,33 @@ public class Console {
     static Set<User> userList = new HashSet<>();
     static Set<Admin> adminList = new HashSet<>();
     static Set<SuperAdmin> superAdminList = new HashSet<>();
+    static Set<Borrow> borrowList = new HashSet<>();
+    static Set<Borrow> reserveList = new HashSet<>();
     public static void main(String[] args) throws IOException {
-//        //保存用户数据
-//        userList.add(new User("16071072","16071111"));
-//        userList.add(new User("11111111","22222222"));
-//        Save.saveUsers(userList);
-//        //保存管理员数据
-//        adminList.add(new Admin("guanliyuan","woshiguanliyuan"));
-//        Save.saveAdmins(adminList);
-//        //保存图书数据
-//        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","ss","s", 1.23, 2));
-//        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","aas","s", 1.23, 2));
-//        Save.saveBooks(myLibrary.MyLibrary);
-//        //保存超级管理员数据
-//        superAdminList.add(new SuperAdmin("h","h"));
-//        Save.saveSuperAdmins(superAdminList);
+        //保存用户数据
+        userList.add(new User("12","12"));
+        userList.add(new User("13","13"));
+        Save.saveUsers(userList);
+        //保存管理员数据
+        adminList.add(new Admin("g","g"));
+        Save.saveAdmins(adminList);
+        //保存图书数据
+        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","ss","s", 1.23, 2));
+        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","aas","s", 1.23, 2));
+        Save.saveBooks(myLibrary.MyLibrary);
+        //保存超级管理员数据
+        superAdminList.add(new SuperAdmin("h","h"));
+        Save.saveSuperAdmins(superAdminList);
+        //保存借阅记录
+        borrowList.add(new Borrow("12","0-670-82162-4"));
+        borrowList.add(new Borrow("13","979-7-121-31638-7"));
+        Save.saveBorrowList(borrowList);
+        //保存预约记录
+        reserveList.add(new Borrow("12","0-670-82162-4"));
+        reserveList.add(new Borrow("13","979-7-121-31638-7"));
+        Save.saveReserveList(reserveList);
+        reserveList = Save.getReserveList();
+        borrowList = Save.getBorrowList();
         superAdminList = Save.getSuperAdmins();
         myLibrary.MyLibrary = Save.getBooks();
         userList = Save.getUsers();
@@ -50,16 +62,20 @@ public class Console {
                 // 用户登录
                 if(user.getClass().equals(User.class)){
                     while(true){
-                        System.out.println("Choose mode:\n1:search books by keyword\n" +
-                                "2:search books by ISBN\nothers:sign out");
+                        System.out.println("Choose mode:\n1:search books by keyword\n" +"2:search books by ISBN\n" +
+                                "3:borrow book\n4:borrow history\n5:return book\n6:reserve a book\nothers:sign out");
                         mode1 = getValue(scanner.next());
                         if(mode1==0) break;
                         switch (mode1){
                             case 1:getBookByKeyword();break;
                             case 2:Book.showBook(myLibrary.getBookByIsbn(myLibrary, getIsbn()));break;
+                            case 3:borrowBook(user.getId());break;
+                            case 4:searchBorrowHistory(user.getId());break;
+                            case 5:returnBook(user.getId());break;
+                            case 6:reserveBook(user.getId());break;
                             default: break;
                         }
-                        if(mode1<1 ||mode1>2) break;
+                        if(mode1<1 ||mode1>6) break;
                     }
                 }
                 //管理员登录
@@ -113,6 +129,47 @@ public class Console {
         Save.saveAdmins(adminList);
         Save.saveUsers(userList);
         Save.saveBooks(myLibrary.MyLibrary);
+        Save.saveReserveList(reserveList);
+        Save.saveBorrowList(borrowList);
+        Save.saveSuperAdmins(superAdminList);
+    }
+
+    public static void reserveBook(String id){
+        Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
+        reserveList.add(new Borrow(id, book.getIsbn()));
+    }
+
+    public static void returnBook(String id){
+        Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
+        for(Borrow borrow:borrowList){
+            if(borrow.getIsbn().equals(book.getIsbn()) && id.equals(borrow.getId())){
+                book.returnBook();
+                borrowList.remove(borrow);
+                System.out.println("return succeed");
+                return ;
+            }
+        }
+        System.out.println("No borrow history!");
+
+    }
+
+    public static void borrowBook(String id){
+        Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
+        if(book.borrowBook()){
+            borrowList.add(new Borrow(id, book.getIsbn()));
+            System.out.println("borrow succeed！");
+        }
+        else{
+            System.out.println("Empty inventory!");
+        }
+    }
+
+    public static void searchBorrowHistory(String id){
+        for(Borrow borrow:borrowList){
+            if(borrow.getId().equals(id)){
+                System.out.println(borrow.showBorrow());
+            }
+        }
     }
 
     public static void addAdmin(){

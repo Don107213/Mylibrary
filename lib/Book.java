@@ -63,6 +63,19 @@ public class Book implements Comparable<Book>{
         return false;
     }
 
+    public void returnBook(){
+        inventory += 1;
+    }
+
+
+    public boolean borrowBook(){
+        if(inventory>0){
+            inventory -= 1;
+            return true;
+        }
+        else return false;
+    }
+
     public void setAuthors(String authors) {
         this.authors = authors;
     }
