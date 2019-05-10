@@ -4,6 +4,8 @@ import MyLibrary.lib.*;
 import java.io.IOException;
 import java.util.*;
 
+
+
 public class Console {
     static Scanner scanner = new Scanner(System.in);
     static Library myLibrary = new Library();
@@ -14,35 +16,36 @@ public class Console {
     static Set<Borrow> reserveList = new HashSet<>();
     public static void main(String[] args) throws IOException {
         //保存用户数据
-        userList.add(new User("12","12"));
-        userList.add(new User("13","13"));
-        Save.saveUsers(userList);
+        User user1 = new User("1","1");
+        User user2 = new User("13","13");
+        userList.add(user1);
+        userList.add(user2);
         //保存管理员数据
         adminList.add(new Admin("g","g"));
-        Save.saveAdmins(adminList);
         //保存图书数据
-        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","ss","s", 1.23, 2));
-        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","aas","s", 1.23, 2));
-        Save.saveBooks(myLibrary.MyLibrary);
+        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","first book","s", 1.23, 2,3));
+        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","second book","s", 1.23, 2,3));
         //保存超级管理员数据
         superAdminList.add(new SuperAdmin("h","h"));
-        Save.saveSuperAdmins(superAdminList);
         //保存借阅记录
-        borrowList.add(new Borrow("12","0-670-82162-4"));
-        borrowList.add(new Borrow("13","979-7-121-31638-7"));
-        Save.saveBorrowList(borrowList);
+        borrowList.add(new Borrow("12","0-670-82162-4",Status.Borrowing));
+        borrowList.add(new Borrow("13","979-7-121-31638-7",Status.Borrowing));
         //保存预约记录
-        reserveList.add(new Borrow("12","0-670-82162-4"));
-        reserveList.add(new Borrow("13","979-7-121-31638-7"));
-        Save.saveReserveList(reserveList);
+        reserveList.add(new Borrow("12","0-670-82162-4",Status.Reserving));
+        reserveList.add(new Borrow("13","979-7-121-31638-7",Status.Reserving));
+        Save.save(userList, "UsersData.txt");
+        Save.save(adminList, "AdminsData.txt");
+        Save.save(myLibrary.MyLibrary, "BooksData.txt");
+        Save.save(superAdminList, "SuperAdminsData.txt");
+        Save.save(borrowList, "BorrowList.txt");
+        Save.save(reserveList, "ReserveList.txt");
         reserveList = Save.getReserveList();
         borrowList = Save.getBorrowList();
         superAdminList = Save.getSuperAdmins();
         myLibrary.MyLibrary = Save.getBooks();
         userList = Save.getUsers();
         adminList = Save.getAdmins();
-//        System.out.println(userList.iterator().next().userInfo());
-//        System.out.println(myLibrary.MyLibrary.iterator().next().bookInfo());
+        updateUserBannedTime();
         int mode;
         while(true)
         {
@@ -63,16 +66,18 @@ public class Console {
                 if(user.getClass().equals(User.class)){
                     while(true){
                         System.out.println("Choose mode:\n1:search books by keyword\n" +"2:search books by ISBN\n" +
-                                "3:borrow book\n4:borrow history\n5:return book\n6:reserve a book\nothers:sign out");
+                                "3:borrow book\n4:borrow history\n5:return book\n6:reserve a book\n" +
+                                "7:renew book\n"+"others:sign out");
                         mode1 = getValue(scanner.next());
                         if(mode1==0) break;
                         switch (mode1){
                             case 1:getBookByKeyword();break;
                             case 2:Book.showBook(myLibrary.getBookByIsbn(myLibrary, getIsbn()));break;
-                            case 3:borrowBook(user.getId());break;
+                            case 3:borrowBook(user);break;
                             case 4:searchBorrowHistory(user.getId());break;
-                            case 5:returnBook(user.getId());break;
+                            case 5:returnBook(user);break;
                             case 6:reserveBook(user.getId());break;
+                            case 7:renewBook(getIsbn(), user.getId());break;
                             default: break;
                         }
                         if(mode1<1 ||mode1>6) break;
@@ -82,34 +87,38 @@ public class Console {
                 else if(user.getClass().equals(Admin.class)){
                     while(true){
                         System.out.println("Choose mode:\n1:add books\n" +"2:modify books\n3:delete books\n" +
-                                "4:search books\n5:search user\n6:modify user info\n7:delete user\nothers:sign out");
+                                "4:search books\n5:search user\n6:modify user info\n7:delete user\n"
+                                +"8:modify banned status\n"+"9:search user's borrow history\n" + "others:sign out");
                         mode1 = getValue(scanner.next());
 
                         if(mode1==0) break;
                         switch (mode1){
                             case 1:myLibrary.addBook(myLibrary, getBook());break;
                             case 2:myLibrary.modifyBook(myLibrary, getIsbn(), getBook());break;
-                            case 3:myLibrary.deleteBook(myLibrary, getIsbn());break;
+                            case 3:deleteBook(getIsbn());break;
                             case 4:getBookByKeyword();break;
                             case 5:searchUser();break;
                             case 6:modifyUserInfo();break;
                             case 7:deleteUser();break;
+                            case 8:modifyBannedStatus();break;
+                            case 9:searchBorrowHistory(getUserID());break;
                             default: break;
                         }
-                        if(mode1<1 ||mode1>7) break;
+                        if(mode1<1 ||mode1>9) break;
                     }
                 }
                 else if(user.getClass().equals(SuperAdmin.class)){
                     while(true){
                         System.out.println("Choose mode:\n1:add books\n" +"2:modify books\n3:delete books\n" +
                                 "4:search books\n5:search user\n6:modify user info\n7:delete user" +
-                                "\n8:add admin\n9:delete admin\n10:modify admin \n11:search admin\nothers:sign out");
+                                "\n8:add admin\n9:delete admin\n10:modify admin \n11:search admin" +
+                                "\n12:modify banned status" +"\n13:search user's borrow history"+ "\nothers:sign out");
                         mode1 = getValue(scanner.next());
                         if(mode1==0) break;
                         switch (mode1){
                             case 1:myLibrary.addBook(myLibrary, getBook());break;
                             case 2:myLibrary.modifyBook(myLibrary, getIsbn(), getBook());break;
-                            case 3:myLibrary.deleteBook(myLibrary, getIsbn());break;
+                            case 3:deleteBook(getIsbn());break;
                             case 4:getBookByKeyword();break;
                             case 5:searchUser();break;
                             case 6:modifyUserInfo();break;
@@ -118,54 +127,145 @@ public class Console {
                             case 9:deleteAdmin();break;
                             case 10:modifyAdmin();break;
                             case 11:searchAdmin();break;
+                            case 12:modifyBannedStatus();break;
+                            case 13:searchBorrowHistory(getUserID());break;
                             default: break;
                         }
-                        if(mode1<1 ||mode1>11) break;
+                        if(mode1<1 ||mode1>13) break;
                     }
                 }
             }
             if(mode<1 ||mode>2) break;
         }
-        Save.saveAdmins(adminList);
-        Save.saveUsers(userList);
-        Save.saveBooks(myLibrary.MyLibrary);
-        Save.saveReserveList(reserveList);
-        Save.saveBorrowList(borrowList);
-        Save.saveSuperAdmins(superAdminList);
+        Save.save(userList, "UsersData.txt");
+        Save.save(adminList, "AdminsData.txt");
+        Save.save(myLibrary.MyLibrary, "BooksData.txt");
+        Save.save(superAdminList, "SuperAdminsData.txt");
+        Save.save(borrowList, "BorrowList.txt");
+        Save.save(reserveList, "ReserveList.txt");
     }
+
+    public static boolean renewBook(String isbn, String id){
+        for(Borrow borrow:borrowList){
+            if(borrow.getIsbn().equals(isbn) && borrow.getId().equals(id)){
+                if(borrow.getRenewable()){
+                    borrow.setExpiredTime(Borrow.mssInTwoWeeks());
+                    System.out.println("renew succeed!");
+                    return true;
+                }
+                else{
+                    System.out.println("failed, renewed before!");
+                    return false;
+                }
+            }
+        }
+        System.out.println("You haven't borrowed this book!");
+        return false;
+    }
+
+    public static String getUserID(){
+        System.out.println("Please input id");
+        return scanner.next();
+    }
+
+    public static boolean modifyBannedStatus(){
+        System.out.println("This operation will allow user to borrow book\n" +
+                "Please input user id");
+        String id = scanner.next();
+        for(User user:userList){
+            if(user.getId().equals(id)){
+                if(user.getBannedTime()>new Date().getTime()){
+                    user.setBannedTime(0);
+                    System.out.println("modify succeed!");
+                    return true;
+                }
+                else{
+                    System.out.println("This user was allowed to borrow book!");
+                    return false;
+                }
+            }
+        }
+        System.out.println("user not found!");
+        return false;
+    }
+
+    public static boolean deleteBook(String isbn){
+        if(ISBN.checkIsbn(isbn)){
+            for(Borrow borrow:borrowList){
+                if(isbn.equals(borrow.getIsbn())){
+                    System.out.println("you can not delete this book");
+                    return false;
+                }
+            }
+            for(Book book:myLibrary.MyLibrary){
+                if(book.getIsbn().equals(isbn)){
+                    myLibrary.MyLibrary.remove(book);
+                    for(Borrow borrow:reserveList){
+                        if(isbn.equals(borrow.getIsbn()))
+                            reserveList.remove(borrow);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static void updateUserBannedTime(){
+        for(Borrow borrow:borrowList){
+            if(borrow.getExpiredTime()>new Date().getTime())
+                borrow.setStatus(Status.OutOfDate);
+                for(User user:userList){
+                    if(user.getId().equals(borrow.getId())){
+                        user.setBannedTime(new Date().getTime()+Borrow.mssInAMonth());
+                        break;
+                    }
+                }
+        }
+    }
+
 
     public static void reserveBook(String id){
         Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
-        reserveList.add(new Borrow(id, book.getIsbn()));
+        reserveList.add(new Borrow(id, book.getIsbn(),Status.Reserving));
     }
 
-    public static void returnBook(String id){
+    public static void returnBook(User user){
         Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
         for(Borrow borrow:borrowList){
-            if(borrow.getIsbn().equals(book.getIsbn()) && id.equals(borrow.getId())){
+            if(borrow.getIsbn().equals(book.getIsbn()) && user.getId().equals(borrow.getId())){
                 book.returnBook();
-                borrowList.remove(borrow);
+                borrow.setStatus(Status.Returned);
+                user.modifyBookBorrowed(-1);
                 System.out.println("return succeed");
                 return ;
             }
         }
         System.out.println("No borrow history!");
-
     }
 
-    public static void borrowBook(String id){
-        Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
-        if(book.borrowBook()){
-            borrowList.add(new Borrow(id, book.getIsbn()));
-            System.out.println("borrow succeed！");
+    public static void borrowBook(User user){
+        if(user.canBorrowBook()){
+            Book book = myLibrary.getBookByIsbn(myLibrary, getIsbn());
+            if(book.bookBorrowable()){
+                borrowList.add(new Borrow(user.getId(), book.getIsbn(),Status.Borrowing));
+                user.modifyBookBorrowed(1);
+                System.out.println("borrow succeed！");
+            }
+            else{
+                System.out.println("Empty inventory!");
+            }
         }
-        else{
-            System.out.println("Empty inventory!");
-        }
+        else System.out.println("You can not borrow a book");
     }
 
     public static void searchBorrowHistory(String id){
         for(Borrow borrow:borrowList){
+            if(borrow.getId().equals(id)){
+                System.out.println(borrow.showBorrow());
+            }
+        }
+        for(Borrow borrow:reserveList){
             if(borrow.getId().equals(id)){
                 System.out.println(borrow.showBorrow());
             }
@@ -423,8 +523,6 @@ public class Console {
                 }
             }
         }
-
-
     }
 
     public static int min(int a, int b){
@@ -450,7 +548,7 @@ public class Console {
         p = scanner.nextDouble();
         System.out.println("Please input the inventory");
         inventory = scanner.nextInt();
-        return new Book(isbn, title, authors, p, inventory);
+        return new Book(isbn, title, authors, p, inventory,inventory);
     }
 
     public static String getIsbn(){

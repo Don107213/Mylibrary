@@ -2,14 +2,6 @@ package MyLibrary.lib;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//class BookTest{
-//    public static void main(String[] args){
-//
-//        System.out.println(ISBN.checkIsbn("979-7-121-31638-7"));
-//        System.out.println(ISBN.checkIsbn("05-2-5-94948X"));
-//    }
-//}
-
 public class ISBN {
     public static String toString(String isbn){
         if(checkIsbn(isbn)) return isbn.replace("-","");
@@ -71,6 +63,5 @@ public class ISBN {
         }
         return true;
     }
-
 }
 

@@ -6,15 +6,16 @@ import java.util.Set;
 
 public class Save {
 
-    public static void saveReserveList(Set<Borrow> reserveList) throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("ReserveList.txt")));
-        for(Borrow reserve:reserveList){
-            bw.write(reserve.borrowInfo());
+    public static <E extends Info> void save(Set<E> eList, String pathName) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(pathName)));
+        for(E e:eList){
+            bw.write(e.getInfo());
             bw.newLine();
             bw.flush();
         }
         bw.close();
     }
+
 
     public static Set<Borrow> getReserveList() throws IOException{
         BufferedReader br = new BufferedReader(new FileReader(new File("ReserveList.txt")));
@@ -22,21 +23,11 @@ public class Save {
         String line;
         while((line = br.readLine())!= null){
             String[] strArray = line.split(",");
-            Borrow reserve = new Borrow(strArray[0], strArray[1], strArray[2]);
+            Borrow reserve = new Borrow(strArray[0], strArray[1], strArray[2], Long.valueOf(strArray[3]),strArray[4],strArray[5]);
             reserveList.add(reserve);
         }
         br.close();
         return reserveList;
-    }
-
-    public static void saveBorrowList(Set<Borrow> borrowList) throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("BorrowList.txt")));
-        for(Borrow borrow:borrowList){
-            bw.write(borrow.borrowInfo());
-            bw.newLine();
-            bw.flush();
-        }
-        bw.close();
     }
 
     public static Set<Borrow> getBorrowList() throws IOException{
@@ -45,21 +36,11 @@ public class Save {
         String line;
         while((line = br.readLine())!= null){
             String[] strArray = line.split(",");
-            Borrow borrow = new Borrow(strArray[0], strArray[1], strArray[2]);
+            Borrow borrow = new Borrow(strArray[0], strArray[1], strArray[2], Long.valueOf(strArray[3]),strArray[4],strArray[5]);
             borrowList.add(borrow);
         }
         br.close();
         return borrowList;
-    }
-
-    public static void saveUsers(Set<User> users) throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("UsersData.txt")));
-        for (User user : users){
-            bw.write(user.userInfo());
-            bw.newLine();
-            bw.flush();
-        }
-        bw.close();
     }
 
     public static Set<User> getUsers() throws IOException{
@@ -89,15 +70,6 @@ public class Save {
         br.close();
         return superAdmins;
     }
-    public static void saveSuperAdmins(Set<SuperAdmin> superAdmins) throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("SuperAdminsData.txt")));
-        for (SuperAdmin superAdmin : superAdmins){
-            bw.write(superAdmin.userInfo());
-            bw.newLine();
-            bw.flush();
-        }
-        bw.close();
-    }
 
     public static Set<Admin> getAdmins() throws IOException{
         BufferedReader br = new BufferedReader(new FileReader(new File("AdminsData.txt")));
@@ -112,25 +84,7 @@ public class Save {
         br.close();
         return admins;
     }
-    public static void saveAdmins(Set<Admin> admins) throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("AdminsData.txt")));
-        for (Admin admin : admins){
-            bw.write(admin.userInfo());
-            bw.newLine();
-            bw.flush();
-        }
-        bw.close();
-    }
 
-    public static void saveBooks(Set<Book> books) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File("BooksData.txt")));
-        for (Book book : books){
-            bw.write(book.bookInfo());
-            bw.newLine();
-            bw.flush();
-        }
-        bw.close();
-    }
     public static Set<Book> getBooks() throws IOException{
         BufferedReader br = new BufferedReader(new FileReader(new File("BooksData.txt")));
         Set<Book> books = new HashSet<>();
@@ -138,7 +92,7 @@ public class Save {
         while((line = br.readLine()) != null) {
             //分割字符串,分割后的元素存储到数组中,以","为分界点
             String[] strArray = line.split(",");
-            Book book = new Book(strArray[0], strArray[1], strArray[2], Double.parseDouble(strArray[4]), Integer.parseInt(strArray[3]));
+            Book book = new Book(strArray[0], strArray[1], strArray[2], Double.parseDouble(strArray[4]), Integer.parseInt(strArray[3]),Integer.parseInt(strArray[5]));
             books.add(book);
         }
         br.close();

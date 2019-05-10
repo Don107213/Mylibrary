@@ -1,21 +1,6 @@
 package MyLibrary.lib;
 import java.util.*;
 
-//class LibraryTest{
-//    public static void main(String[] args){
-//        Library myLibrary = new Library();
-//        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","ss","s", -1.23, 2));
-//        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","ss","s", 1.23, -2));
-//        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","ss","s", 1.23, 2));
-//        myLibrary.addBook(myLibrary, new Book("0-670-82162-4","ss","s", 1.23, 2));
-//        myLibrary.addBook(myLibrary, new Book("979-7-121-31638-7","ss","s", 1.23, 2));
-//        myLibrary.modifyBook(myLibrary,"979-7-121-31638-7", new Book("979-7-121-31638-7","s","s", 1.23, 2));
-//        myLibrary.getBookByKeywork(myLibrary, "ss");
-//        myLibrary.getBookByIsbn(myLibrary, "0-670-82162-4").print();
-//        myLibrary.showLibrary(myLibrary);
-//    }
-//}
-
 public class Library {
     public Set<Book> MyLibrary = new HashSet<Book>();
 
@@ -49,12 +34,13 @@ public class Library {
         return books;
     }
 
-    public void addBook(Library library,Book b){
+    public boolean addBook(Library library,Book b){
         if(Book.isBook(b)){
             boolean e = false;
             for(Book book : library.MyLibrary){
-                if (book.getIsbn().equals(b.getIsbn())){
+                if (b.equals(book)){
                     book.setInventory(book.getInventory() + b.getInventory());
+                    book.setBookNum(book.getBookNum()+b.getBookNum());
                     e = true;
                     break;
                 }
@@ -63,41 +49,45 @@ public class Library {
                 library.MyLibrary.add(b);
             }
         }
-        System.out.println("Add books succeeded!");
+        return true;
     }
 
-    public void deleteBook(Library library, String isbn){
+    private boolean deleteBook(Library library, String isbn){
         if(ISBN.checkIsbn(isbn)){
             for(Book book:library.MyLibrary){
                 if(book.getIsbn().equals(isbn)){
                     library.MyLibrary.remove(book);
-                    System.out.println("Book deleted!");
-                    break;
+                    //System.out.println("Book deleted!");
+                    return true;
                 }
             }
+            return false;
         }
         else{
-            System.out.println("Book not found!");
+            //System.out.println("Book not found!");
+            return false;
         }
     }
 
-    public void modifyBook(Library library, String isbn, Book book){
+    public boolean modifyBook(Library library, String isbn, Book book){
         if(ISBN.checkIsbn(isbn)){
             for(Book b : library.MyLibrary) {
                 if (b.getIsbn().equals(isbn)) {
                     if (Book.isBook(book)) {
                         library.MyLibrary.remove(b);
                         Book b1 = getBookByIsbn(library, book.getIsbn());
-                        if (b1 != null) {
-                            System.out.println("ISBN冲突!");
+                        if (b1 != null) {//新书的isbn与图书馆原有的书的isbn冲突
+                            library.MyLibrary.add(b);
                         } else {
                             library.MyLibrary.add(book);
+                            return true;
                         }
                     }
                     break;
                 }
             }
         }
+        return false;
     }
 }
 
