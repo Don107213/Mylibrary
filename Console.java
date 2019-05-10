@@ -154,7 +154,7 @@ public class Console {
                     return true;
                 }
                 else{
-                    System.out.println("failed, renewed before!");
+                    System.out.println("failed!");
                     return false;
                 }
             }

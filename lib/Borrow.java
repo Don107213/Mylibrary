@@ -66,9 +66,10 @@ public class Borrow implements Info{
         return isbn;
     }
 
-    public boolean getRenewable(){ return renewable;}
-    public void setRenewable(){
-        this.renewable = false;
+    public boolean getRenewable(){
+        if((this.expiredTime - new Date().getTime())<0 || (this.expiredTime - new Date().getTime())>=3*24*3600 || renewable==false)
+            return false;
+        renewable = false;
+        return true;
     }
-
 }
